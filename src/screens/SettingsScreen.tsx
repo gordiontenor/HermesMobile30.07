@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from "react-native";
+import { View, Text, TextInput, Pressable, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import { router } from "expo-router";
 import { ScreenShell } from "../components/ScreenShell";
 import { GatewayStatusCard } from "../components/GatewayStatusCard";
@@ -9,7 +9,9 @@ import type { HermesTheme } from "../theme/theme";
 import type { HermesGatewaySetupConfig, HermesGatewayTestResultStatus } from "../viewModels/hermesGatewaySetupViewModel";
 import { getHermesGatewayTestResultMessage } from "../viewModels/hermesGatewaySetupViewModel";
 import { fetchHermesProviderModelRegistryWithDiagnostics } from "../api/hermesProviderModelRegistryTransport";
+import { Ionicons } from "@expo/vector-icons";
 import { useGatewayPersistence } from "../hooks/useGatewayPersistence";
+import { useProviderApiKeys } from "../hooks/useProviderApiKeys";
 
 interface Props {
   theme: HermesTheme;
@@ -19,7 +21,11 @@ interface Props {
 
 export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Props) {
   const { gatewayUrl, username, password, setGatewayUrl, setUsername, setPassword } = useGatewayPersistence();
+  const { deepseekKey, opencodeKey, openrouterKey, openaiConnected, setDeepseekKey, setOpencodeKey, setOpenrouterKey } = useProviderApiKeys();
   const [connectionStatus, setConnectionStatus] = useState<HermesGatewayTestResultStatus>("idle");
+  const [showDeepseek, setShowDeepseek] = useState(false);
+  const [showOpencode, setShowOpencode] = useState(false);
+  const [showOpenrouter, setShowOpenrouter] = useState(false);
 
   const handleConnect = async () => {
     const config: HermesGatewaySetupConfig = {
@@ -148,6 +154,84 @@ export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Pr
               Skip — Use Demo Mode
             </Text>
           </Pressable>
+        </HermesCard>
+
+        <HermesCard title="Provider API Keys">
+          <View style={{ marginBottom: 8 }}>
+            <Text style={dynamicStyles.label}>DeepSeek API Key</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <TextInput
+                style={[dynamicStyles.input, { flex: 1 }]}
+                placeholder="sk-..."
+                placeholderTextColor={dynamicStyles.placeholderTextColor}
+                value={deepseekKey}
+                onChangeText={setDeepseekKey}
+                secureTextEntry={!showDeepseek}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <TouchableOpacity onPress={() => setShowDeepseek(!showDeepseek)} style={{ padding: 8 }}>
+                <Ionicons
+                  name={showDeepseek ? "eye-outline" : "eye-off-outline"}
+                  size={22}
+                  color={theme.textSecondary}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={{ marginBottom: 8 }}>
+            <Text style={dynamicStyles.label}>OpenRouter API Key</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <TextInput
+                style={[dynamicStyles.input, { flex: 1 }]}
+                placeholder="sk-or-..."
+                placeholderTextColor={dynamicStyles.placeholderTextColor}
+                value={openrouterKey}
+                onChangeText={setOpenrouterKey}
+                secureTextEntry={!showOpenrouter}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <TouchableOpacity onPress={() => setShowOpenrouter(!showOpenrouter)} style={{ padding: 8 }}>
+                <Ionicons
+                  name={showOpenrouter ? "eye-outline" : "eye-off-outline"}
+                  size={22}
+                  color={theme.textSecondary}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={{ marginBottom: 8 }}>
+            <Text style={dynamicStyles.label}>OpenCode API Key</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <TextInput
+                style={[dynamicStyles.input, { flex: 1 }]}
+                placeholder="sk-..."
+                placeholderTextColor={dynamicStyles.placeholderTextColor}
+                value={opencodeKey}
+                onChangeText={setOpencodeKey}
+                secureTextEntry={!showOpencode}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <TouchableOpacity onPress={() => setShowOpencode(!showOpencode)} style={{ padding: 8 }}>
+                <Ionicons
+                  name={showOpencode ? "eye-outline" : "eye-off-outline"}
+                  size={22}
+                  color={theme.textSecondary}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View>
+            <Text style={dynamicStyles.label}>OpenAI OAuth</Text>
+            <Text style={[dynamicStyles.infoText, { marginTop: 4 }]}>
+              {openaiConnected ? "Connected" : "Not connected"} — Connect via jcode on VPS
+            </Text>
+          </View>
         </HermesCard>
 
         <HermesCard title="Provider Model Registry">

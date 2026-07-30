@@ -19,6 +19,10 @@ const GATEWAY_URL_KEY = "@hermes/gatewayUrl";
 const SELECTED_PROVIDER_KEY = "@hermes/selectedProvider";
 const SELECTED_MODEL_KEY = "@hermes/selectedModel";
 const SAFE_MODE_KEY = "@hermes/safeMode";
+const DEMO_MODE_KEY = "@hermes/demoMode";
+
+const DEMO_PROVIDER = "openai-codex";
+const DEMO_MODEL = "gpt-4o";
 
 type LoadState = "loading" | "no_gateway" | "no_provider" | "ready";
 
@@ -29,6 +33,7 @@ export default function ChatRoute() {
   const [model, setModel] = useState("");
   const [safeMode, setSafeMode] = useState(false);
   const [inputText, setInputText] = useState("");
+  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -62,6 +67,23 @@ export default function ChatRoute() {
     })();
   }, []);
 
+  const handleStartDemo = async () => {
+    try {
+      await AsyncStorage.multiSet([
+        [SELECTED_PROVIDER_KEY, DEMO_PROVIDER],
+        [SELECTED_MODEL_KEY, DEMO_MODEL],
+        [DEMO_MODE_KEY, "true"],
+      ]);
+    } catch {
+      // silently fail
+    }
+    setGatewayUrl("demo://local");
+    setProvider(DEMO_PROVIDER);
+    setModel(DEMO_MODEL);
+    setIsDemo(true);
+    setLoadState("ready");
+  };
+
   if (loadState === "loading") {
     return (
       <ScreenShell>
@@ -86,6 +108,9 @@ export default function ChatRoute() {
               <Text style={styles.actionButtonText}>Go to Settings</Text>
             </Pressable>
           </Link>
+          <Pressable style={styles.demoButton} onPress={handleStartDemo}>
+            <Text style={styles.demoButtonText}>Continue in Demo Mode</Text>
+          </Pressable>
         </View>
       </ScreenShell>
     );
@@ -105,6 +130,9 @@ export default function ChatRoute() {
               <Text style={styles.actionButtonText}>Select Provider</Text>
             </Pressable>
           </Link>
+          <Pressable style={styles.demoButton} onPress={handleStartDemo}>
+            <Text style={styles.demoButtonText}>Continue in Demo Mode</Text>
+          </Pressable>
         </View>
       </ScreenShell>
     );
@@ -114,7 +142,7 @@ export default function ChatRoute() {
     <ScreenShell safeMode={safeMode}>
       <View style={styles.container}>
         {/* Connection info card */}
-        <HermesCard title="Connected">
+        <HermesCard title={isDemo ? "Connected (Demo Mode)" : "Connected"}>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Gateway</Text>
             <Text style={styles.infoValue} numberOfLines={1}>
@@ -131,6 +159,7 @@ export default function ChatRoute() {
           </View>
           <View style={styles.badgeRow}>
             {safeMode && <StatusPill label="Safe Mode" color={darkTheme.accent} />}
+            {isDemo && <StatusPill label="Demo Mode" color={darkTheme.accent} />}
             <StatusPill label="Connected" color={darkTheme.success} />
           </View>
         </HermesCard>
@@ -272,5 +301,20 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontSize: 16,
     fontWeight: "600",
+  },
+  demoButton: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: darkTheme.primary,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    marginTop: 12,
+  },
+  demoButtonText: {
+    color: darkTheme.primary,
+    fontSize: 15,
+    fontWeight: "600",
+    textAlign: "center",
   },
 });

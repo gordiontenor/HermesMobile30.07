@@ -1,68 +1,130 @@
 import React from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet, Dimensions } from "react-native";
 import { Link, router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
 import { ScreenShell } from "../src/components/ScreenShell";
 import { darkTheme } from "../src/theme/theme";
 import { hermesBuildInfo } from "../src/config/hermesBuildInfo";
 
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
 const s = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     padding: 24,
     backgroundColor: darkTheme.background,
   },
+  // Gradient-like glowing orbs
+  glowOrbTop: {
+    position: "absolute",
+    top: -80,
+    right: -60,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: darkTheme.primary,
+    opacity: 0.08,
+  },
+  glowOrbBottom: {
+    position: "absolute",
+    bottom: -40,
+    left: -80,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: darkTheme.accent,
+    opacity: 0.06,
+  },
+  glowOrbMid: {
+    position: "absolute",
+    top: SCREEN_WIDTH * 0.4,
+    left: -40,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: darkTheme.primary,
+    opacity: 0.05,
+  },
+  // Hero section
+  heroSection: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingBottom: 40,
+  },
+  iconWrapper: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: darkTheme.surface,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: darkTheme.border,
+  },
   title: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: "800",
     color: darkTheme.text,
     marginBottom: 8,
+    letterSpacing: 0.3,
   },
   subtitle: {
     fontSize: 16,
     color: darkTheme.textSecondary,
     marginBottom: 4,
+    letterSpacing: 0.2,
   },
   version: {
-    fontSize: 14,
+    fontSize: 13,
     color: darkTheme.textSecondary,
     fontFamily: "monospace",
-    marginBottom: 24,
+    marginTop: 4,
+    opacity: 0.7,
   },
-  description: {
-    fontSize: 16,
-    color: darkTheme.textSecondary,
-    textAlign: "center",
-    lineHeight: 24,
-    marginBottom: 40,
-    paddingHorizontal: 16,
+  // Buttons
+  buttonSection: {
+    paddingBottom: 32,
+    gap: 12,
   },
-  button: {
+  primaryButton: {
+    flexDirection: "row",
     backgroundColor: darkTheme.primary,
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: 16,
+    paddingVertical: 16,
     paddingHorizontal: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: darkTheme.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
   },
-  buttonText: {
+  primaryButtonText: {
     color: "#FFF",
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
+    marginLeft: 8,
   },
-  demoButton: {
+  outlineButton: {
+    flexDirection: "row",
     backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: darkTheme.primary,
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderWidth: 1.5,
+    borderColor: darkTheme.border,
+    borderRadius: 16,
+    paddingVertical: 16,
     paddingHorizontal: 32,
-    marginTop: 16,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  demoButtonText: {
-    color: darkTheme.primary,
+  outlineButtonText: {
+    color: darkTheme.text,
     fontSize: 16,
     fontWeight: "600",
+    marginLeft: 8,
   },
 });
 
@@ -83,21 +145,34 @@ export default function IndexScreen() {
   return (
     <ScreenShell>
       <View style={s.container}>
-        <Text style={s.title}>Hermes Mobile</Text>
-        <Text style={s.subtitle}>Phase {hermesBuildInfo.phase}</Text>
-        <Text style={s.version}>v{hermesBuildInfo.label}</Text>
-        <Text style={s.description}>
-          Configure your Hermes Gateway, manage provider models, and connect to
-          your AI infrastructure — all from your mobile device.
-        </Text>
-        <Link href="/settings" asChild>
-          <Pressable style={s.button}>
-            <Text style={s.buttonText}>Settings</Text>
+        {/* Gradient-like glowing orbs */}
+        <View style={s.glowOrbTop} />
+        <View style={s.glowOrbMid} />
+        <View style={s.glowOrbBottom} />
+
+        {/* Hero */}
+        <View style={s.heroSection}>
+          <View style={s.iconWrapper}>
+            <Ionicons name="chatbubbles-outline" size={56} color={darkTheme.primary} />
+          </View>
+          <Text style={s.title}>Hermes Mobile</Text>
+          <Text style={s.subtitle}>Your AI Gateway</Text>
+          <Text style={s.version}>v{hermesBuildInfo.label}</Text>
+        </View>
+
+        {/* Buttons */}
+        <View style={s.buttonSection}>
+          <Link href="/settings" asChild>
+            <Pressable style={s.primaryButton}>
+              <Ionicons name="sparkles" size={18} color="#FFF" />
+              <Text style={s.primaryButtonText}>Get Started</Text>
+            </Pressable>
+          </Link>
+          <Pressable style={s.outlineButton} onPress={handleDemoChat}>
+            <Ionicons name="chatbox-ellipses-outline" size={18} color={darkTheme.text} />
+            <Text style={s.outlineButtonText}>Chat (Demo)</Text>
           </Pressable>
-        </Link>
-        <Pressable style={s.demoButton} onPress={handleDemoChat}>
-          <Text style={s.demoButtonText}>Chat (Demo)</Text>
-        </Pressable>
+        </View>
       </View>
     </ScreenShell>
   );

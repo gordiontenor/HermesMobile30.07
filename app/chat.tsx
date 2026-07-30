@@ -12,7 +12,9 @@ import {
 } from "react-native";
 import { Link, router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
 import { ScreenShell } from "../src/components/ScreenShell";
+import { Header } from "../src/components/Header";
 import { HermesCard } from "../src/components/HermesCard";
 import { StatusPill } from "../src/components/StatusPill";
 import { darkTheme } from "../src/theme/theme";
@@ -34,7 +36,14 @@ type LoadState = "loading" | "no_gateway" | "no_provider" | "ready";
 type Message = {
   role: "user" | "assistant";
   text: string;
+  timestamp: Date;
 };
+
+function formatTime(date: Date): string {
+  const h = date.getHours().toString().padStart(2, "0");
+  const m = date.getMinutes().toString().padStart(2, "0");
+  return `${h}:${m}`;
+}
 
 export default function ChatRoute() {
   const [loadState, setLoadState] = useState<LoadState>("loading");
@@ -113,7 +122,7 @@ export default function ChatRoute() {
     if (!text || isSending) return;
 
     // Add user message bubble
-    const userMsg: Message = { role: "user", text };
+    const userMsg: Message = { role: "user", text, timestamp: new Date() };
     setMessages((prev) => [...prev, userMsg]);
     setInputText("");
     setIsSending(true);
@@ -125,6 +134,7 @@ export default function ChatRoute() {
         const demoReply: Message = {
           role: "assistant",
           text: "This is a demo response. Connect to a real gateway for actual AI responses.",
+          timestamp: new Date(),
         };
         setMessages((prev) => [...prev, demoReply]);
       } else {
@@ -138,7 +148,11 @@ export default function ChatRoute() {
         const response = await sendLiveNoToolsChatMessage(config, { text });
 
         if (response.status === "ok") {
-          const assistantMsg: Message = { role: "assistant", text: response.text };
+          const assistantMsg: Message = {
+            role: "assistant",
+            text: response.text,
+            timestamp: new Date(),
+          };
           setMessages((prev) => [...prev, assistantMsg]);
         } else {
           const errorMsg: Message = {
@@ -147,6 +161,7 @@ export default function ChatRoute() {
               response.status === "validation_error"
                 ? response.safeError
                 : "Unexpected response from gateway.",
+            timestamp: new Date(),
           };
           setMessages((prev) => [...prev, errorMsg]);
         }
@@ -154,7 +169,10 @@ export default function ChatRoute() {
     } catch (err: unknown) {
       const errorText =
         err instanceof Error ? err.message : "Failed to send message. Please try again.";
-      setMessages((prev) => [...prev, { role: "assistant", text: errorText }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", text: errorText, timestamp: new Date() },
+      ]);
     } finally {
       setIsSending(false);
     }
@@ -216,10 +234,17 @@ export default function ChatRoute() {
 
   return (
     <ScreenShell safeMode={safeMode}>
+      {/* Custom header with chat icon */}
+      <Header
+        title="Chat"
+        showBack
+        showSettings
+      />
+
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
         <View style={styles.container}>
           {/* Connection info card */}
@@ -239,8 +264,12 @@ export default function ChatRoute() {
               <Text style={styles.infoValue}>{model}</Text>
             </View>
             <View style={styles.badgeRow}>
-              {safeMode && <StatusPill label="Safe Mode" color={darkTheme.accent} />}
-              {isDemo && <StatusPill label="Demo Mode" color={darkTheme.accent} />}
+              {safeMode && (
+                <StatusPill label="Safe Mode" color={darkTheme.accent} />
+              )}
+              {isDemo && (
+                <StatusPill label="Demo Mode" color={darkTheme.accent} />
+              )}
               <StatusPill label="Connected" color={darkTheme.success} />
             </View>
           </HermesCard>
@@ -255,6 +284,12 @@ export default function ChatRoute() {
           >
             {messages.length === 0 ? (
               <View style={styles.emptyState}>
+                <Ionicons
+                  name="chatbox-ellipses-outline"
+                  size={40}
+                  color={darkTheme.textSecondary}
+                  style={{ marginBottom: 12, opacity: 0.4 }}
+                />
                 <Text style={styles.emptyText}>
                   Send a message to start the conversation.
                 </Text>
@@ -278,6 +313,16 @@ export default function ChatRoute() {
                   >
                     {msg.text}
                   </Text>
+                  <Text
+                    style={[
+                      styles.timestamp,
+                      msg.role === "user"
+                        ? styles.timestampUser
+                        : styles.timestampAssistant,
+                    ]}
+                  >
+                    {formatTime(msg.timestamp)}
+                  </Text>
                 </View>
               ))
             )}
@@ -295,21 +340,36 @@ export default function ChatRoute() {
 
           {/* Input bar */}
           <View style={styles.inputBar}>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Type a message..."
-              placeholderTextColor={darkTheme.textSecondary}
-              value={inputText}
-              onChangeText={setInputText}
-              multiline={false}
-              editable={!isSending}
-            />
+            <View style={styles.inputWrapper}>
+              <Ionicons
+                name="chatbox-outline"
+                size={18}
+                color={darkTheme.textSecondary}
+                style={styles.inputIcon}
+              />
+              <TextInput
+                style={styles.textInput}
+                placeholder="Type a message..."
+                placeholderTextColor={darkTheme.textSecondary}
+                value={inputText}
+                onChangeText={setInputText}
+                multiline={false}
+                editable={!isSending}
+              />
+            </View>
             <Pressable
-              style={[styles.sendButton, (!inputText.trim() || isSending) && styles.sendButtonDisabled]}
+              style={[
+                styles.sendButton,
+                (!inputText.trim() || isSending) && styles.sendButtonDisabled,
+              ]}
               disabled={!inputText.trim() || isSending}
               onPress={handleSend}
             >
-              <Text style={styles.sendButtonText}>Send</Text>
+              <Ionicons
+                name="send"
+                size={18}
+                color={!inputText.trim() || isSending ? darkTheme.textSecondary : "#FFF"}
+              />
             </Pressable>
           </View>
         </View>
@@ -385,20 +445,22 @@ const styles = StyleSheet.create({
   // --- Message bubbles ---
   bubble: {
     maxWidth: "80%",
-    borderRadius: 12,
-    paddingHorizontal: 14,
+    borderRadius: 16,
+    paddingHorizontal: 16,
     paddingVertical: 10,
     marginVertical: 4,
   },
   bubbleUser: {
-    backgroundColor: "#1A73E8",
+    backgroundColor: darkTheme.primary,
     alignSelf: "flex-end",
     borderBottomRightRadius: 4,
   },
   bubbleAssistant: {
-    backgroundColor: "#2D2D2D",
+    backgroundColor: darkTheme.surface,
     alignSelf: "flex-start",
     borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: darkTheme.border,
   },
   bubbleText: {
     fontSize: 15,
@@ -408,7 +470,18 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   bubbleTextAssistant: {
-    color: "#FFFFFF",
+    color: darkTheme.text,
+  },
+  timestamp: {
+    fontSize: 11,
+    marginTop: 4,
+    textAlign: "right",
+  },
+  timestampUser: {
+    color: "rgba(255,255,255,0.6)",
+  },
+  timestampAssistant: {
+    color: darkTheme.textSecondary,
   },
   sendingBubble: {
     flexDirection: "row",
@@ -420,33 +493,42 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     paddingVertical: 8,
+    paddingHorizontal: 4,
     borderTopWidth: 1,
     borderTopColor: darkTheme.border,
+    backgroundColor: darkTheme.background,
+  },
+  inputWrapper: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: darkTheme.surface,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: darkTheme.border,
+    paddingHorizontal: 14,
+  },
+  inputIcon: {
+    marginRight: 8,
   },
   textInput: {
     flex: 1,
-    backgroundColor: darkTheme.surface,
     color: darkTheme.text,
-    borderRadius: 8,
-    paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 15,
-    borderWidth: 1,
-    borderColor: darkTheme.border,
   },
   sendButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: darkTheme.primary,
-    borderRadius: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
   },
   sendButtonDisabled: {
-    opacity: 0.4,
-  },
-  sendButtonText: {
-    color: "#FFF",
-    fontSize: 15,
-    fontWeight: "600",
+    backgroundColor: darkTheme.surface,
+    borderWidth: 1,
+    borderColor: darkTheme.border,
   },
   actionButton: {
     backgroundColor: darkTheme.primary,

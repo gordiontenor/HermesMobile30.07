@@ -30,7 +30,12 @@
     },
     "owner": "gordios",
     "plugins": [
-      "expo-router"
+      "expo-router",
+      ["expo-build-properties", {
+        "android": {
+          "usesCleartextTraffic": true
+        }
+      }]
     ]
   }
 }

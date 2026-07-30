@@ -8,37 +8,14 @@ export default function RootLayout() {
     <ScreenShell>
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: darkTheme.background },
-          headerTintColor: darkTheme.text,
-          headerTitleStyle: { fontWeight: "700", color: darkTheme.text },
+          headerShown: false,
           contentStyle: { backgroundColor: darkTheme.background },
         }}
       >
-        <Stack.Screen
-          name="index"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="settings"
-          options={{
-            title: "Settings",
-            headerBackTitle: "Back",
-          }}
-        />
-        <Stack.Screen
-          name="providers"
-          options={{
-            title: "Provider Models",
-            headerBackTitle: "Back",
-          }}
-        />
-        <Stack.Screen
-          name="chat"
-          options={{
-            title: "Chat",
-            headerBackTitle: "Back",
-          }}
-        />
+        <Stack.Screen name="index" />
+        <Stack.Screen name="settings" />
+        <Stack.Screen name="providers" />
+        <Stack.Screen name="chat" />
       </Stack>
     </ScreenShell>
   );

@@ -56,7 +56,7 @@ export function createHermesGatewayAuthenticatedHeaders(
 export async function fetchHermesGatewayWithTimeout(
   url: string,
   options: RequestInit,
-  timeoutMs = 12000,
+  timeoutMs = 30000,
 ): Promise<Response> {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);

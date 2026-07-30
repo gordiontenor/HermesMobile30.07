@@ -35,7 +35,7 @@ export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Pr
 
     if (result.status === "success") {
       setConnectionStatus("success");
-      router.push("/chat");
+      router.push("/providers");
     } else {
       switch (result.diagnostics.failureClass) {
         case "auth_failed":

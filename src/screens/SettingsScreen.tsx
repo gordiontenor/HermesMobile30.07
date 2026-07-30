@@ -140,6 +140,14 @@ export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Pr
           {statusMessage && (
             <Text style={dynamicStyles.statusText}>{statusMessage}</Text>
           )}
+          <Pressable
+            style={{ marginTop: 12, alignItems: "center" }}
+            onPress={() => router.push("/providers")}
+          >
+            <Text style={{ color: theme.primary, fontSize: 14 }}>
+              Skip — Use Demo Mode
+            </Text>
+          </Pressable>
         </HermesCard>
 
         <HermesCard title="Provider Model Registry">

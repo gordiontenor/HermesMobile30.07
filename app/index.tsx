@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ScreenShell } from "../src/components/ScreenShell";
 import { darkTheme } from "../src/theme/theme";
 import { hermesBuildInfo } from "../src/config/hermesBuildInfo";
@@ -49,9 +50,36 @@ const s = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  demoButton: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: darkTheme.primary,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    marginTop: 16,
+  },
+  demoButtonText: {
+    color: darkTheme.primary,
+    fontSize: 16,
+    fontWeight: "600",
+  },
 });
 
 export default function IndexScreen() {
+  const handleDemoChat = async () => {
+    try {
+      await AsyncStorage.multiSet([
+        ["@hermes/selectedProvider", "openai-codex"],
+        ["@hermes/selectedModel", "gpt-4o"],
+        ["@hermes/demoMode", "true"],
+      ]);
+    } catch {
+      // silently fail
+    }
+    router.push("/chat");
+  };
+
   return (
     <ScreenShell>
       <View style={s.container}>
@@ -67,6 +95,9 @@ export default function IndexScreen() {
             <Text style={s.buttonText}>Settings</Text>
           </Pressable>
         </Link>
+        <Pressable style={s.demoButton} onPress={handleDemoChat}>
+          <Text style={s.demoButtonText}>Chat (Demo)</Text>
+        </Pressable>
       </View>
     </ScreenShell>
   );

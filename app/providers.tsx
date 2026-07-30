@@ -7,6 +7,7 @@ import { HermesCard } from "../src/components/HermesCard";
 import { StatusPill } from "../src/components/StatusPill";
 import { darkTheme } from "../src/theme/theme";
 import { fetchHermesProviderModelRegistryWithDiagnostics } from "../src/api/hermesProviderModelRegistryTransport";
+import { MOCK_PROVIDER_REGISTRY } from "../src/data/hermesProviderModelFixtures";
 import type { HermesProviderModelRegistry, HermesProviderDefinition, HermesModelDefinition } from "../src/types/hermesProviderModel";
 
 const SELECTED_PROVIDER_KEY = "@hermes/selectedProvider";
@@ -110,9 +111,17 @@ export default function ProvidersRoute() {
           <Text style={styles.header}>Provider Models</Text>
           <HermesCard title="Gateway Not Configured">
             <Text style={styles.textSecondary}>
-              Please configure your Gateway connection in Settings first, then return here.
+              Could not connect to gateway. Showing demo data.
             </Text>
           </HermesCard>
+          {renderProviderList(
+            MOCK_PROVIDER_REGISTRY.providers,
+            selectedProvider,
+            selectedModel,
+            savedModel,
+            handleSelectProvider,
+            handleSelectModel
+          )}
           <Pressable style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>Back to Settings</Text>
           </Pressable>
@@ -128,7 +137,18 @@ export default function ProvidersRoute() {
           <Text style={styles.header}>Provider Models</Text>
           <HermesCard title="Error Loading Providers">
             <Text style={styles.errorText}>{errorMessage}</Text>
+            <Text style={[styles.textSecondary, { marginTop: 8 }]}>
+              Could not connect to gateway. Showing demo data.
+            </Text>
           </HermesCard>
+          {renderProviderList(
+            MOCK_PROVIDER_REGISTRY.providers,
+            selectedProvider,
+            selectedModel,
+            savedModel,
+            handleSelectProvider,
+            handleSelectModel
+          )}
           <Pressable style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>Back to Settings</Text>
           </Pressable>
@@ -158,78 +178,14 @@ export default function ProvidersRoute() {
           </HermesCard>
         )}
 
-        {providers.map((provider) => {
-          const isSelected = selectedProvider === provider.providerId;
-          const enabledModels = provider.models.filter((m) => m.enabled);
-
-          return (
-            <HermesCard
-              key={provider.providerId}
-              title={provider.providerLabel}
-              subtitle={provider.providerDescription}
-            >
-              <View style={styles.pillRow}>
-                <StatusPill
-                  label={provider.enabled ? "Available" : "Disabled"}
-                  color={provider.enabled ? darkTheme.success : darkTheme.textSecondary}
-                />
-              </View>
-              <Pressable
-                style={{ marginTop: 8 }}
-                onPress={() => handleSelectProvider(provider.providerId)}
-              >
-                <Text
-                  style={[
-                    styles.textSecondary,
-                    isSelected && { color: darkTheme.primary, fontWeight: "600" },
-                  ]}
-                >
-                  {isSelected ? "▼ Hide Models" : "▶ Show Models"}
-                </Text>
-              </Pressable>
-
-              {isSelected && (
-                <View style={{ marginTop: 12 }}>
-                  {enabledModels.length === 0 ? (
-                    <Text style={styles.textSecondary}>No models available.</Text>
-                  ) : (
-                    enabledModels.map((model) => {
-                      const isModelSelected = selectedModel === model.modelId;
-
-                      return (
-                        <Pressable
-                          key={model.modelId}
-                          style={[
-                            styles.modelItem,
-                            isModelSelected && styles.modelItemSelected,
-                          ]}
-                          onPress={() => handleSelectModel(model.modelId, provider.providerId)}
-                        >
-                          <Text style={styles.modelLabel}>{model.modelLabel}</Text>
-                          <Text style={styles.modelDesc}>{model.modelDescription}</Text>
-                          <View style={styles.capsRow}>
-                            {model.capabilities.supportsStreaming && (
-                              <StatusPill label="Streaming" color="#8AB4F8" />
-                            )}
-                            {model.capabilities.supportsVision && (
-                              <StatusPill label="Vision" color="#34A853" />
-                            )}
-                            {model.capabilities.supportsToolCalls && (
-                              <StatusPill label="Tools" color="#F28B82" />
-                            )}
-                          </View>
-                          {isModelSelected && (
-                            <Text style={styles.successText}>✓ Selected</Text>
-                          )}
-                        </Pressable>
-                      );
-                    })
-                  )}
-                </View>
-              )}
-            </HermesCard>
-          );
-        })}
+        {renderProviderList(
+          providers,
+          selectedProvider,
+          selectedModel,
+          savedModel,
+          handleSelectProvider,
+          handleSelectModel
+        )}
 
         <Pressable style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>Back to Settings</Text>
@@ -239,6 +195,95 @@ export default function ProvidersRoute() {
         <View style={{ height: 40 }} />
       </ScrollView>
     </ScreenShell>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Shared provider-list renderer used by the loaded, no_config, and error states
+// ---------------------------------------------------------------------------
+function renderProviderList(
+  providers: HermesProviderDefinition[],
+  selectedProvider: string | null,
+  selectedModel: string | null,
+  savedModel: string | null,
+  onSelectProvider: (id: string) => void,
+  onSelectModel: (modelId: string, providerId: string) => void,
+) {
+  return (
+    <>
+      {providers.map((provider) => {
+        const isSelected = selectedProvider === provider.providerId;
+        const enabledModels = provider.models.filter((m) => m.enabled);
+
+        return (
+          <HermesCard
+            key={provider.providerId}
+            title={provider.providerLabel}
+            subtitle={provider.providerDescription}
+          >
+            <View style={styles.pillRow}>
+              <StatusPill
+                label={provider.enabled ? "Available" : "Disabled"}
+                color={provider.enabled ? darkTheme.success : darkTheme.textSecondary}
+              />
+            </View>
+            <Pressable
+              style={{ marginTop: 8 }}
+              onPress={() => onSelectProvider(provider.providerId)}
+            >
+              <Text
+                style={[
+                  styles.textSecondary,
+                  isSelected && { color: darkTheme.primary, fontWeight: "600" },
+                ]}
+              >
+                {isSelected ? "▼ Hide Models" : "▶ Show Models"}
+              </Text>
+            </Pressable>
+
+            {isSelected && (
+              <View style={{ marginTop: 12 }}>
+                {enabledModels.length === 0 ? (
+                  <Text style={styles.textSecondary}>No models available.</Text>
+                ) : (
+                  enabledModels.map((model) => {
+                    const isModelSelected = selectedModel === model.modelId;
+
+                    return (
+                      <Pressable
+                        key={model.modelId}
+                        style={[
+                          styles.modelItem,
+                          isModelSelected && styles.modelItemSelected,
+                        ]}
+                        onPress={() => onSelectModel(model.modelId, provider.providerId)}
+                      >
+                        <Text style={styles.modelLabel}>{model.modelLabel}</Text>
+                        <Text style={styles.modelDesc}>{model.modelDescription}</Text>
+                        <View style={styles.capsRow}>
+                          {model.capabilities.supportsStreaming && (
+                            <StatusPill label="Streaming" color="#8AB4F8" />
+                          )}
+                          {model.capabilities.supportsVision && (
+                            <StatusPill label="Vision" color="#34A853" />
+                          )}
+                          {model.capabilities.supportsToolCalls && (
+                            <StatusPill label="Tools" color="#F28B82" />
+                          )}
+                        </View>
+                        {isModelSelected && (
+                          <Text style={styles.successText}>✓ Selected</Text>
+                        )}
+                      </Pressable>
+                    );
+                  })
+                )}
+              </View>
+            )}
+          </HermesCard>
+        );
+      })}
+    </>
   );
 }
 

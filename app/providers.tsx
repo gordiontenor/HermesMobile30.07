@@ -270,6 +270,10 @@ function renderProviderList(
                           {model.capabilities.supportsToolCalls && (
                             <StatusPill label="Tools" color="#F28B82" />
                           )}
+                          {/* Fallback for servers that use 'supportsTools' field */}
+                          {!model.capabilities.supportsToolCalls && (model.capabilities as any).supportsTools && (
+                            <StatusPill label="Tools" color="#F28B82" />
+                          )}
                         </View>
                         {isModelSelected && (
                           <Text style={styles.successText}>✓ Selected</Text>

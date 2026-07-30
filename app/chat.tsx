@@ -145,7 +145,13 @@ export default function ChatRoute() {
           isDirty: true,
         };
 
-        const response = await sendLiveNoToolsChatMessage(config, { text });
+        // Get API key for the selected provider
+        let apiKey: string | undefined;
+        if (provider === "deepseek") apiKey = (await AsyncStorage.getItem("@hermes/apiKey_deepseek")) || undefined;
+        else if (provider === "opencode") apiKey = (await AsyncStorage.getItem("@hermes/apiKey_opencode")) || undefined;
+        else if (provider === "openrouter") apiKey = (await AsyncStorage.getItem("@hermes/apiKey_openrouter")) || undefined;
+
+        const response = await sendLiveNoToolsChatMessage(config, { message: text, apiKey, model });
 
         if (response.status === "ok") {
           const assistantMsg: Message = {

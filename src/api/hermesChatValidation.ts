@@ -1,12 +1,16 @@
-export function parseChatRequest(payload: unknown): { text: string } | { status: "validation_error"; safeError: string } {
+export function parseChatRequest(payload: unknown): { message: string } | { status: "validation_error"; safeError: string } {
   if (!payload || typeof payload !== "object") {
     return { status: "validation_error", safeError: "Invalid payload" };
   }
   const p = payload as any;
-  if (typeof p.text !== "string" || !p.text.trim()) {
-    return { status: "validation_error", safeError: "Missing text" };
+  if (typeof p.message === "string" && p.message.trim()) {
+    return { message: p.message };
   }
-  return { text: p.text };
+  // Accept 'text' field as fallback
+  if (typeof p.text === "string" && p.text.trim()) {
+    return { message: p.text };
+  }
+  return { status: "validation_error", safeError: "Missing message" };
 }
 
 export type ParsedChatResponse = 
@@ -19,8 +23,17 @@ export function parseChatResponse(json: unknown): ParsedChatResponse {
     return { status: "unexpected_response", safeError: "Invalid response" };
   }
   const j = json as any;
+  // Gateway returns { status: "ok", assistantText: "..." }
+  if (j.status === "ok" && typeof j.assistantText === "string") {
+    return { status: "ok", text: j.assistantText };
+  }
+  // Fallback: check for 'text' field
   if (typeof j.text === "string") {
     return { status: "ok", text: j.text };
+  }
+  // Gateway validation error
+  if (j.status === "validation_error" && typeof j.safeError === "string") {
+    return { status: "validation_error", safeError: j.safeError };
   }
   return { status: "unexpected_response", safeError: "Missing text field" };
 }

@@ -361,28 +361,17 @@ export default function ChatRoute() {
         <View style={styles.container}>
           {/* Connection info card */}
           <HermesCard title={isDemo ? "Bağlı (Demo Modu)" : "Bağlı"}>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Gateway</Text>
-              <Text style={styles.infoValue} numberOfLines={1}>
-                {gatewayUrl}
+            <View style={styles.compactStatusRow}>
+              <View style={[styles.statusDot, { backgroundColor: isDemo ? darkTheme.accent : darkTheme.success }]} />
+              <Text style={styles.compactStatusText} numberOfLines={1}>
+                Provider: {provider} • Model: {model}
               </Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Provider</Text>
-              <Text style={styles.infoValue}>{provider}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Model</Text>
-              <Text style={styles.infoValue}>{model}</Text>
-            </View>
-            <View style={styles.badgeRow}>
               {safeMode && (
                 <StatusPill label="Safe Mode" color={darkTheme.accent} />
               )}
               {isDemo && (
-                <StatusPill label="Demo Mode" color={darkTheme.accent} />
+                <StatusPill label="Demo Modu" color={darkTheme.accent} />
               )}
-              <StatusPill label="Bağlı" color={darkTheme.success} />
               <Pressable
                 style={styles.clearButton}
                 onPress={() =>
@@ -526,29 +515,21 @@ const styles = StyleSheet.create({
     marginTop: 4,
     lineHeight: 20,
   },
-  infoRow: {
+  compactStatusRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 6,
+    gap: 6,
+    marginTop: 8,
   },
-  infoLabel: {
-    color: darkTheme.textSecondary,
-    fontSize: 13,
-    fontWeight: "500",
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
-  infoValue: {
+  compactStatusText: {
     color: darkTheme.text,
     fontSize: 13,
-    fontFamily: "monospace",
     flexShrink: 1,
-    marginLeft: 8,
-  },
-  badgeRow: {
-    flexDirection: "row",
-    gap: 6,
-    flexWrap: "wrap",
-    marginTop: 10,
   },
   clearButton: {
     flexDirection: "row",

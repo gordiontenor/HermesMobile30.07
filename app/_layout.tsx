@@ -16,6 +16,7 @@ export default function RootLayout() {
         <Stack.Screen name="settings" />
         <Stack.Screen name="providers" />
         <Stack.Screen name="chat" />
+        <Stack.Screen name="oauth" />
       </Stack>
     </ScreenShell>
   );

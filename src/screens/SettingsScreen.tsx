@@ -234,6 +234,18 @@ export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Pr
           </View>
         </HermesCard>
 
+        <HermesCard title="OpenAI (OAuth)">
+          <Text style={dynamicStyles.infoText}>
+            OpenAI hesabını VPS üzerinden bağla.
+          </Text>
+          <Pressable
+            style={[dynamicStyles.button, { marginTop: 4 }]}
+            onPress={() => router.push("/oauth")}
+          >
+            <Text style={dynamicStyles.buttonText}>OAuth Durumunu Gör</Text>
+          </Pressable>
+        </HermesCard>
+
         <HermesCard title="Provider Model Registry">
           <Text style={dynamicStyles.infoText}>
             {safeMode ? "Safe mode: text-only models" : "Full provider selection"}

@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Animated,
 } from "react-native";
 import { Link, router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -20,6 +21,10 @@ import { StatusPill } from "../src/components/StatusPill";
 import { darkTheme } from "../src/theme/theme";
 import { useGatewayPersistence } from "../src/hooks/useGatewayPersistence";
 import { sendLiveNoToolsChatMessage } from "../src/api/hermesLiveChatTransport";
+import {
+  getFriendlyChatErrorMessage,
+  getFriendlyChatStatusMessage,
+} from "../src/utils/hermesChatErrorMessages";
 import type { HermesGatewaySetupConfig } from "../src/viewModels/hermesGatewaySetupViewModel";
 
 const GATEWAY_URL_KEY = "@hermes/gatewayUrl";
@@ -27,9 +32,10 @@ const SELECTED_PROVIDER_KEY = "@hermes/selectedProvider";
 const SELECTED_MODEL_KEY = "@hermes/selectedModel";
 const SAFE_MODE_KEY = "@hermes/safeMode";
 const DEMO_MODE_KEY = "@hermes/demoMode";
+const CHAT_HISTORY_KEY = "@hermes/chatHistory";
 
-const DEMO_PROVIDER = "openai-codex";
-const DEMO_MODEL = "gpt-4o";
+const DEMO_PROVIDER = "opencode-go";
+const DEMO_MODEL = "kimi-k2.5";
 
 type LoadState = "loading" | "no_gateway" | "no_provider" | "ready";
 
@@ -37,12 +43,62 @@ type Message = {
   role: "user" | "assistant";
   text: string;
   timestamp: Date;
+  isError?: boolean;
 };
 
 function formatTime(date: Date): string {
   const h = date.getHours().toString().padStart(2, "0");
   const m = date.getMinutes().toString().padStart(2, "0");
   return `${h}:${m}`;
+}
+
+// Phase-shifted blink schedule for each typing dot. All dots are driven by a
+// single 0 → 1 clock value; each dot interpolates it with its own offset
+// (0 / 0.33 / 0.66) so the blinks cascade left → right.
+const TYPING_DOT_PHASES: ReadonlyArray<{
+  inputRange: number[];
+  outputRange: number[];
+}> = [
+  // offset 0: brightens first, then dims
+  { inputRange: [0, 0.2, 0.4, 1], outputRange: [0.2, 1, 0.2, 0.2] },
+  // offset 0.33
+  { inputRange: [0, 0.33, 0.53, 0.73, 1], outputRange: [0.2, 0.2, 1, 0.2, 0.2] },
+  // offset 0.66: brightens last
+  { inputRange: [0, 0.66, 0.86, 1], outputRange: [0.2, 0.2, 1, 0.2] },
+];
+
+// Three-dot "typing" indicator shown while a reply is being generated.
+// Rendered as an assistant-style bubble so it sits on the left side.
+function TypingBubble() {
+  // Single shared clock (0 → 1, looped); each dot derives its own staggered
+  // blink from it via interpolation phases.
+  const clock = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Animated.loop resets the value to 0 after each pass, giving a
+    // continuous sawtooth clock. The loop is stopped on unmount so no
+    // animation leaks after leaving the screen.
+    const animation = Animated.loop(
+      Animated.timing(clock, {
+        toValue: 1,
+        duration: 900,
+        useNativeDriver: true,
+      })
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [clock]);
+
+  return (
+    <View style={[styles.bubble, styles.bubbleAssistant, styles.typingBubble]}>
+      {TYPING_DOT_PHASES.map((phase, index) => (
+        <Animated.View
+          key={index}
+          style={[styles.typingDot, { opacity: clock.interpolate(phase) }]}
+        />
+      ))}
+    </View>
+  );
 }
 
 export default function ChatRoute() {
@@ -91,6 +147,41 @@ export default function ChatRoute() {
     })();
   }, []);
 
+  // Restore persisted chat history on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(CHAT_HISTORY_KEY);
+        if (!raw) return;
+        const parsed: unknown = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return;
+        const restored: Message[] = parsed
+          .filter(
+            (m): m is { role: string; text: string; timestamp?: unknown } =>
+              typeof m === "object" &&
+              m !== null &&
+              typeof (m as { role?: unknown }).role === "string" &&
+              ((m as { role?: unknown }).role === "user" ||
+                (m as { role?: unknown }).role === "assistant") &&
+              typeof (m as { text?: unknown }).text === "string"
+          )
+          .map((m) => {
+            const ts = m.timestamp ? new Date(String(m.timestamp)) : new Date();
+            return {
+              role: m.role === "user" ? ("user" as const) : ("assistant" as const),
+              text: m.text,
+              timestamp: Number.isNaN(ts.getTime()) ? new Date() : ts,
+            };
+          });
+        if (restored.length > 0) {
+          setMessages(restored);
+        }
+      } catch {
+        // silently ignore corrupted history
+      }
+    })();
+  }, []);
+
   const handleStartDemo = async () => {
     try {
       await AsyncStorage.multiSet([
@@ -108,14 +199,26 @@ export default function ChatRoute() {
     setLoadState("ready");
   };
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom when messages change or the typing indicator
+  // appears/disappears, so the newest bubble stays in view.
   useEffect(() => {
     if (messages.length > 0) {
       setTimeout(() => {
         scrollRef.current?.scrollToEnd({ animated: true });
       }, 100);
     }
-  }, [messages]);
+  }, [messages, isSending]);
+
+  // Append a message to state and persist the updated history
+  const appendMessage = useCallback((msg: Message) => {
+    setMessages((prev) => {
+      const next = [...prev, msg];
+      AsyncStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(next)).catch(() => {
+        // silently ignore storage errors
+      });
+      return next;
+    });
+  }, []);
 
   const handleSend = useCallback(async () => {
     const text = inputText.trim();
@@ -123,7 +226,7 @@ export default function ChatRoute() {
 
     // Add user message bubble
     const userMsg: Message = { role: "user", text, timestamp: new Date() };
-    setMessages((prev) => [...prev, userMsg]);
+    appendMessage(userMsg);
     setInputText("");
     setIsSending(true);
 
@@ -136,7 +239,7 @@ export default function ChatRoute() {
           text: "This is a demo response. Connect to a real gateway for actual AI responses.",
           timestamp: new Date(),
         };
-        setMessages((prev) => [...prev, demoReply]);
+        appendMessage(demoReply);
       } else {
         const config: HermesGatewaySetupConfig = {
           url: gatewayUrl,
@@ -148,7 +251,7 @@ export default function ChatRoute() {
         // Get API key for the selected provider
         let apiKey: string | undefined;
         if (provider === "deepseek") apiKey = (await AsyncStorage.getItem("@hermes/apiKey_deepseek")) || undefined;
-        else if (provider === "opencode") apiKey = (await AsyncStorage.getItem("@hermes/apiKey_opencode")) || undefined;
+        else if (provider === "opencode-go" || provider === "opencode") apiKey = (await AsyncStorage.getItem("@hermes/apiKey_opencode")) || undefined;
         else if (provider === "openrouter") apiKey = (await AsyncStorage.getItem("@hermes/apiKey_openrouter")) || undefined;
 
         const response = await sendLiveNoToolsChatMessage(config, { message: text, apiKey, model, provider });
@@ -159,26 +262,28 @@ export default function ChatRoute() {
             text: response.text,
             timestamp: new Date(),
           };
-          setMessages((prev) => [...prev, assistantMsg]);
+          appendMessage(assistantMsg);
         } else {
           const errorMsg: Message = {
             role: "assistant",
-            text:
-              response.status === "validation_error"
-                ? response.safeError
-                : "Unexpected response from gateway.",
+            text: getFriendlyChatStatusMessage(response.status, response.safeError),
             timestamp: new Date(),
+            isError: true,
           };
-          setMessages((prev) => [...prev, errorMsg]);
+          appendMessage(errorMsg);
         }
       }
     } catch (err: unknown) {
-      const errorText =
-        err instanceof Error ? err.message : "Failed to send message. Please try again.";
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", text: errorText, timestamp: new Date() },
-      ]);
+      const errorText = getFriendlyChatErrorMessage(
+        err,
+        "Mesaj gönderilemedi. Tekrar dene."
+      );
+      appendMessage({
+        role: "assistant",
+        text: errorText,
+        timestamp: new Date(),
+        isError: true,
+      });
     } finally {
       setIsSending(false);
     }
@@ -314,7 +419,9 @@ export default function ChatRoute() {
                       styles.bubbleText,
                       msg.role === "user"
                         ? styles.bubbleTextUser
-                        : styles.bubbleTextAssistant,
+                        : msg.isError
+                          ? styles.bubbleTextError
+                          : styles.bubbleTextAssistant,
                     ]}
                   >
                     {msg.text}
@@ -333,15 +440,8 @@ export default function ChatRoute() {
               ))
             )}
 
-            {/* Sending indicator */}
-            {isSending && (
-              <View style={[styles.bubble, styles.bubbleAssistant, styles.sendingBubble]}>
-                <ActivityIndicator size="small" color={darkTheme.textSecondary} />
-                <Text style={[styles.bubbleTextAssistant, { marginLeft: 8 }]}>
-                  Thinking...
-                </Text>
-              </View>
-            )}
+            {/* Typing indicator (three-dot animation while waiting for a reply) */}
+            {isSending && <TypingBubble />}
           </ScrollView>
 
           {/* Input bar */}
@@ -478,6 +578,9 @@ const styles = StyleSheet.create({
   bubbleTextAssistant: {
     color: darkTheme.text,
   },
+  bubbleTextError: {
+    color: "#F28B82",
+  },
   timestamp: {
     fontSize: 11,
     marginTop: 4,
@@ -489,9 +592,17 @@ const styles = StyleSheet.create({
   timestampAssistant: {
     color: darkTheme.textSecondary,
   },
-  sendingBubble: {
+  typingBubble: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 5,
+    paddingVertical: 14,
+  },
+  typingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: darkTheme.text,
   },
   // --- Input bar ---
   inputBar: {

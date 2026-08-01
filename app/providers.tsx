@@ -80,6 +80,7 @@ export default function ProvidersRoute() {
   };
 
   const handleSelectModel = async (modelId: string, providerId: string) => {
+    if (providerId === "openai-oauth") return;
     setSelectedModelState(modelId);
     try {
       await AsyncStorage.multiSet([
@@ -241,7 +242,21 @@ function renderProviderList(
               </Text>
             </Pressable>
 
-            {isSelected && (
+            {isSelected && provider.providerId === "openai-oauth" ? (
+              <View style={{ marginTop: 12 }}>
+                <Text style={styles.textSecondary}>
+                  OpenAI (OAuth) bağlantısı VPS üzerinden yapılır. Durumu görmek için tıkla.
+                </Text>
+                <Pressable
+                  style={{ marginTop: 12 }}
+                  onPress={() => router.push("/oauth")}
+                >
+                  <Text style={[styles.textSecondary, { color: darkTheme.primary, fontWeight: "600" }]}>
+                    OAuth Durumunu Gör
+                  </Text>
+                </Pressable>
+              </View>
+            ) : isSelected && (
               <View style={{ marginTop: 12 }}>
                 {enabledModels.length === 0 ? (
                   <Text style={styles.textSecondary}>No models available.</Text>

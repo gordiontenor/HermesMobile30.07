@@ -1,14 +1,14 @@
-export function parseChatRequest(payload: unknown): { message: string; apiKey?: string; model?: string } | { status: "validation_error"; safeError: string } {
+export function parseChatRequest(payload: unknown): { message: string; apiKey?: string; model?: string; provider?: string } | { status: "validation_error"; safeError: string } {
   if (!payload || typeof payload !== "object") {
     return { status: "validation_error", safeError: "Invalid payload" };
   }
   const p = payload as any;
   if (typeof p.message === "string" && p.message.trim()) {
-    return { message: p.message, apiKey: p.apiKey, model: p.model };
+    return { message: p.message, apiKey: p.apiKey, model: p.model, provider: p.provider };
   }
   // Accept 'text' field as fallback
   if (typeof p.text === "string" && p.text.trim()) {
-    return { message: p.text, apiKey: p.apiKey, model: p.model };
+    return { message: p.text, apiKey: p.apiKey, model: p.model, provider: p.provider };
   }
   return { status: "validation_error", safeError: "Missing message" };
 }

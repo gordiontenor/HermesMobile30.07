@@ -151,7 +151,7 @@ export default function ChatRoute() {
         else if (provider === "opencode") apiKey = (await AsyncStorage.getItem("@hermes/apiKey_opencode")) || undefined;
         else if (provider === "openrouter") apiKey = (await AsyncStorage.getItem("@hermes/apiKey_openrouter")) || undefined;
 
-        const response = await sendLiveNoToolsChatMessage(config, { message: text, apiKey, model });
+        const response = await sendLiveNoToolsChatMessage(config, { message: text, apiKey, model, provider });
 
         if (response.status === "ok") {
           const assistantMsg: Message = {

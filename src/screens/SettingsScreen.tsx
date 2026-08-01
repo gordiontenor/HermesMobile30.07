@@ -240,9 +240,9 @@ export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Pr
           </Text>
           <View style={styles.pillRow}>
             <StatusPill label="DeepSeek" color={theme.primary} />
-            <StatusPill label="OpenAI" color={theme.primary} />
-            <StatusPill label="OpenRouter" color={theme.success} />
-            <StatusPill label="Local" color={theme.accent} />
+            <StatusPill label="OpenCode Go" color={theme.success} />
+            <StatusPill label="OpenRouter" color={theme.accent} />
+            <StatusPill label="OpenAI (OAuth)" color={theme.primary} />
           </View>
         </HermesCard>
 

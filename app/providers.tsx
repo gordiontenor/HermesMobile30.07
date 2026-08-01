@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Pressable, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ScreenShell } from "../src/components/ScreenShell";
@@ -22,6 +22,7 @@ export default function ProvidersRoute() {
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
   const [selectedModel, setSelectedModelState] = useState<string | null>(null);
   const [savedModel, setSavedModel] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -115,13 +116,21 @@ export default function ProvidersRoute() {
               Could not connect to gateway. Showing demo data.
             </Text>
           </HermesCard>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Provider veya model ara..."
+            placeholderTextColor={darkTheme.textSecondary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
           {renderProviderList(
             MOCK_PROVIDER_REGISTRY.providers,
             selectedProvider,
             selectedModel,
             savedModel,
             handleSelectProvider,
-            handleSelectModel
+            handleSelectModel,
+            searchQuery
           )}
           <Pressable style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>Back to Settings</Text>
@@ -142,13 +151,21 @@ export default function ProvidersRoute() {
               Could not connect to gateway. Showing demo data.
             </Text>
           </HermesCard>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Provider veya model ara..."
+            placeholderTextColor={darkTheme.textSecondary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
           {renderProviderList(
             MOCK_PROVIDER_REGISTRY.providers,
             selectedProvider,
             selectedModel,
             savedModel,
             handleSelectProvider,
-            handleSelectModel
+            handleSelectModel,
+            searchQuery
           )}
           <Pressable style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>Back to Settings</Text>
@@ -167,6 +184,13 @@ export default function ProvidersRoute() {
         <Text style={styles.subtitle}>
           Select a provider and model for your Hermes Gateway connection.
         </Text>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Provider veya model ara..."
+          placeholderTextColor={darkTheme.textSecondary}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
 
         {savedModel && selectedProvider && (
           <HermesCard title="Current Selection">
@@ -185,7 +209,8 @@ export default function ProvidersRoute() {
           selectedModel,
           savedModel,
           handleSelectProvider,
-          handleSelectModel
+          handleSelectModel,
+          searchQuery
         )}
 
         <Pressable style={styles.backButton} onPress={() => router.back()}>
@@ -209,10 +234,23 @@ function renderProviderList(
   savedModel: string | null,
   onSelectProvider: (id: string) => void,
   onSelectModel: (modelId: string, providerId: string) => void,
+  searchQuery: string,
 ) {
+  const normalizedQuery = searchQuery.trim().toLocaleLowerCase("tr-TR");
+  const filteredProviders = normalizedQuery
+    ? providers.filter((provider) =>
+        provider.providerLabel.toLocaleLowerCase("tr-TR").includes(normalizedQuery) ||
+        provider.models.some(
+          (model) =>
+            model.modelLabel.toLocaleLowerCase("tr-TR").includes(normalizedQuery) ||
+            model.modelId.toLocaleLowerCase("tr-TR").includes(normalizedQuery),
+        ),
+      )
+    : providers;
+
   return (
     <>
-      {providers.map((provider) => {
+      {filteredProviders.map((provider) => {
         const isSelected = selectedProvider === provider.providerId;
         const enabledModels = provider.models.filter((m) => m.enabled);
 
@@ -311,6 +349,16 @@ const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: "center", alignItems: "center", padding: 16 },
   header: { color: darkTheme.text, fontSize: 24, fontWeight: "700", marginBottom: 16 },
   subtitle: { color: darkTheme.textSecondary, fontSize: 14, marginBottom: 16 },
+  searchInput: {
+    backgroundColor: darkTheme.surface,
+    borderWidth: 1,
+    borderColor: darkTheme.border,
+    borderRadius: 8,
+    color: darkTheme.text,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
   text: { color: darkTheme.text, fontSize: 16 },
   textSecondary: { color: darkTheme.textSecondary, fontSize: 14 },
   errorText: { color: darkTheme.error, fontSize: 14, textAlign: "center", marginTop: 8 },

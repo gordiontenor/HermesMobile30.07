@@ -8,7 +8,7 @@ import { StatusPill } from "../src/components/StatusPill";
 import { darkTheme } from "../src/theme/theme";
 import { fetchHermesProviderModelRegistryWithDiagnostics } from "../src/api/hermesProviderModelRegistryTransport";
 import { MOCK_PROVIDER_REGISTRY } from "../src/data/hermesProviderModelFixtures";
-import type { HermesProviderModelRegistry, HermesProviderDefinition, HermesModelDefinition } from "../src/types/hermesProviderModel";
+import type { HermesProviderModelRegistry, HermesProviderDefinition } from "../src/types/hermesProviderModel";
 
 const SELECTED_PROVIDER_KEY = "@hermes/selectedProvider";
 const SELECTED_MODEL_KEY = "@hermes/selectedModel";

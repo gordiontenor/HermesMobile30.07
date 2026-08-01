@@ -75,5 +75,13 @@ export function getFriendlyChatStatusMessage(
   if (status === "unexpected_response") {
     return TRANSPORT_ERROR_MESSAGES.unexpected_response;
   }
+  if (status === "upstream_unavailable") {
+    return (
+      "Seçili provider yanıt vermedi. API key'inin doğru girildiğinden emin ol veya farklı bir model dene."
+    );
+  }
+  if (status === "timeout") {
+    return "Gateway yanıt vermedi. Birkaç saniye sonra tekrar dene.";
+  }
   return "Bir hata oluştu. Tekrar dene.";
 }

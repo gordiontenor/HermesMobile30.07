@@ -16,6 +16,8 @@ export function parseChatRequest(payload: unknown): { message: string; apiKey?: 
 export type ParsedChatResponse = 
   | { status: "ok"; text: string }
   | { status: "validation_error"; safeError: string }
+  | { status: "upstream_unavailable"; safeError: string }
+  | { status: "timeout"; safeError: string }
   | { status: "unexpected_response"; safeError: string };
 
 export function parseChatResponse(json: unknown): ParsedChatResponse {
@@ -34,6 +36,14 @@ export function parseChatResponse(json: unknown): ParsedChatResponse {
   // Gateway validation error
   if (j.status === "validation_error" && typeof j.safeError === "string") {
     return { status: "validation_error", safeError: j.safeError };
+  }
+  // Gateway upstream/provider errors (503 etc.) — pass through so the UI can
+  // show a meaningful message instead of a generic "unexpected response".
+  if (j.status === "upstream_unavailable" && typeof j.safeError === "string") {
+    return { status: "upstream_unavailable", safeError: j.safeError };
+  }
+  if (j.status === "timeout" && typeof j.safeError === "string") {
+    return { status: "timeout", safeError: j.safeError };
   }
   return { status: "unexpected_response", safeError: "Missing text field" };
 }

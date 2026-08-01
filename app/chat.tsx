@@ -251,9 +251,29 @@ export default function ChatRoute() {
 
         // Get API key for the selected provider
         let apiKey: string | undefined;
-        if (provider === "deepseek") apiKey = (await AsyncStorage.getItem("@hermes/apiKey_deepseek")) || undefined;
-        else if (provider === "opencode-go" || provider === "opencode") apiKey = (await AsyncStorage.getItem("@hermes/apiKey_opencode")) || undefined;
-        else if (provider === "openrouter") apiKey = (await AsyncStorage.getItem("@hermes/apiKey_openrouter")) || undefined;
+        let providerKeyLabel: string | null = null;
+        if (provider === "deepseek") {
+          apiKey = (await AsyncStorage.getItem("@hermes/apiKey_deepseek")) || undefined;
+          providerKeyLabel = "DeepSeek";
+        } else if (provider === "opencode-go" || provider === "opencode") {
+          apiKey = (await AsyncStorage.getItem("@hermes/apiKey_opencode")) || undefined;
+          providerKeyLabel = "OpenCode Go";
+        } else if (provider === "openrouter") {
+          apiKey = (await AsyncStorage.getItem("@hermes/apiKey_openrouter")) || undefined;
+          providerKeyLabel = "OpenRouter";
+        }
+
+        // Pre-send guard: provider needs an API key but none is stored.
+        if (providerKeyLabel && !apiKey) {
+          appendMessage({
+            role: "assistant",
+            text: `${providerKeyLabel} API key'i girilmemiş. Ayarlar'dan API key'ini ekleyip tekrar dene.`,
+            timestamp: new Date(),
+            isError: true,
+          });
+          setIsSending(false);
+          return;
+        }
 
         const response = await sendLiveNoToolsChatMessage(config, { message: text, apiKey, model, provider });
 

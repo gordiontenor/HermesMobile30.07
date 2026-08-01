@@ -11,7 +11,7 @@ import {
   Platform,
   Animated,
 } from "react-native";
-import { Link, router } from "expo-router";
+import { Link } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { ScreenShell } from "../src/components/ScreenShell";
@@ -55,10 +55,10 @@ function formatTime(date: Date): string {
 // Phase-shifted blink schedule for each typing dot. All dots are driven by a
 // single 0 → 1 clock value; each dot interpolates it with its own offset
 // (0 / 0.33 / 0.66) so the blinks cascade left → right.
-const TYPING_DOT_PHASES: ReadonlyArray<{
+const TYPING_DOT_PHASES: readonly {
   inputRange: number[];
   outputRange: number[];
-}> = [
+}[] = [
   // offset 0: brightens first, then dims
   { inputRange: [0, 0.2, 0.4, 1], outputRange: [0.2, 1, 0.2, 0.2] },
   // offset 0.33
@@ -287,7 +287,7 @@ export default function ChatRoute() {
     } finally {
       setIsSending(false);
     }
-  }, [inputText, isSending, isDemo, gatewayUrl, username, password]);
+  }, [inputText, isSending, isDemo, gatewayUrl, username, password, appendMessage, model, provider]);
 
   if (loadState === "loading") {
     return (

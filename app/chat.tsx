@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Animated,
@@ -236,7 +237,7 @@ export default function ChatRoute() {
         await new Promise((r) => setTimeout(r, 800));
         const demoReply: Message = {
           role: "assistant",
-          text: "This is a demo response. Connect to a real gateway for actual AI responses.",
+          text: "Bu bir demo yanıtıdır. Gerçek AI yanıtları için gateway'e bağlan.",
           timestamp: new Date(),
         };
         appendMessage(demoReply);
@@ -303,18 +304,18 @@ export default function ChatRoute() {
     return (
       <ScreenShell>
         <View style={styles.centered}>
-          <HermesCard title="Gateway Not Configured">
+          <HermesCard title="Gateway Yapılandırılmamış">
             <Text style={styles.infoText}>
-              Please configure your Gateway in Settings before using the chat.
+              Sohbeti kullanmadan önce Ayarlar&apos;dan gateway&apos;ini yapılandır.
             </Text>
           </HermesCard>
           <Link href="/settings" asChild>
             <Pressable style={styles.actionButton}>
-              <Text style={styles.actionButtonText}>Go to Settings</Text>
+              <Text style={styles.actionButtonText}>Ayarlar&apos;a Git</Text>
             </Pressable>
           </Link>
           <Pressable style={styles.demoButton} onPress={handleStartDemo}>
-            <Text style={styles.demoButtonText}>Continue in Demo Mode</Text>
+            <Text style={styles.demoButtonText}>Demo Modunda Devam Et</Text>
           </Pressable>
         </View>
       </ScreenShell>
@@ -325,18 +326,18 @@ export default function ChatRoute() {
     return (
       <ScreenShell>
         <View style={styles.centered}>
-          <HermesCard title="No Provider Selected">
+          <HermesCard title="Provider Seçilmedi">
             <Text style={styles.infoText}>
-              Please select a provider and model to start chatting.
+              Sohbete başlamak için bir provider ve model seç.
             </Text>
           </HermesCard>
           <Link href="/providers" asChild>
             <Pressable style={styles.actionButton}>
-              <Text style={styles.actionButtonText}>Select Provider</Text>
+              <Text style={styles.actionButtonText}>Provider Seç</Text>
             </Pressable>
           </Link>
           <Pressable style={styles.demoButton} onPress={handleStartDemo}>
-            <Text style={styles.demoButtonText}>Continue in Demo Mode</Text>
+            <Text style={styles.demoButtonText}>Demo Modunda Devam Et</Text>
           </Pressable>
         </View>
       </ScreenShell>
@@ -359,7 +360,7 @@ export default function ChatRoute() {
       >
         <View style={styles.container}>
           {/* Connection info card */}
-          <HermesCard title={isDemo ? "Connected (Demo Mode)" : "Connected"}>
+          <HermesCard title={isDemo ? "Bağlı (Demo Modu)" : "Bağlı"}>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Gateway</Text>
               <Text style={styles.infoValue} numberOfLines={1}>
@@ -381,7 +382,30 @@ export default function ChatRoute() {
               {isDemo && (
                 <StatusPill label="Demo Mode" color={darkTheme.accent} />
               )}
-              <StatusPill label="Connected" color={darkTheme.success} />
+              <StatusPill label="Bağlı" color={darkTheme.success} />
+              <Pressable
+                style={styles.clearButton}
+                onPress={() =>
+                  Alert.alert(
+                    "Sohbeti Temizle",
+                    "Tüm mesajlar silinecek. Emin misin?",
+                    [
+                      { text: "İptal", style: "cancel" },
+                      {
+                        text: "Temizle",
+                        style: "destructive",
+                        onPress: () => {
+                          setMessages([]);
+                          AsyncStorage.removeItem(CHAT_HISTORY_KEY).catch(() => {});
+                        },
+                      },
+                    ],
+                  )
+                }
+              >
+                <Ionicons name="trash-outline" size={16} color={darkTheme.error} />
+                <Text style={styles.clearButtonText}>Temizle</Text>
+              </Pressable>
             </View>
           </HermesCard>
 
@@ -402,7 +426,7 @@ export default function ChatRoute() {
                   style={{ marginBottom: 12, opacity: 0.4 }}
                 />
                 <Text style={styles.emptyText}>
-                  Send a message to start the conversation.
+                  Henüz mesaj yok. İlk mesajını yaz!
                 </Text>
               </View>
             ) : (
@@ -525,6 +549,18 @@ const styles = StyleSheet.create({
     gap: 6,
     flexWrap: "wrap",
     marginTop: 10,
+  },
+  clearButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingVertical: 2,
+    paddingHorizontal: 4,
+  },
+  clearButtonText: {
+    color: darkTheme.error,
+    fontSize: 12,
+    fontWeight: "600",
   },
   messagesArea: {
     flex: 1,

@@ -12,6 +12,7 @@ import { fetchHermesProviderModelRegistryWithDiagnostics } from "../api/hermesPr
 import { Ionicons } from "@expo/vector-icons";
 import { useGatewayPersistence } from "../hooks/useGatewayPersistence";
 import { useProviderApiKeys } from "../hooks/useProviderApiKeys";
+import { hermesBuildInfo } from "../config/hermesBuildInfo";
 
 interface Props {
   theme: HermesTheme;
@@ -270,7 +271,14 @@ export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Pr
           </View>
         </HermesCard>
 
-        <GatewayStatusCard status={gatewayUrl ? "Configured" : "Not Connected"} url={gatewayUrl} />
+        <HermesCard title="Hakkında">
+          <Text style={dynamicStyles.label}>Hermes Mobile</Text>
+          <Text style={[dynamicStyles.infoText, { marginTop: 4 }]}>
+            Faz {hermesBuildInfo.phase} — {hermesBuildInfo.label}
+          </Text>
+        </HermesCard>
+
+        <GatewayStatusCard status={gatewayUrl ? "Yapılandırıldı" : "Bağlı Değil"} url={gatewayUrl} />
       </ScrollView>
     </ScreenShell>
   );

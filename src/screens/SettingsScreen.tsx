@@ -109,9 +109,9 @@ export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Pr
   return (
     <ScreenShell safeMode={safeMode}>
       <ScrollView style={styles.container}>
-        <Text style={dynamicStyles.title}>Settings</Text>
+        <Text style={dynamicStyles.title}>Ayarlar</Text>
 
-        <HermesCard title="Gateway Connection">
+        <HermesCard title="Gateway Bağlantısı">
           <TextInput
             style={dynamicStyles.input}
             placeholder="Gateway URL"
@@ -121,14 +121,14 @@ export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Pr
           />
           <TextInput
             style={dynamicStyles.input}
-            placeholder="Username"
+            placeholder="Kullanıcı Adı"
             placeholderTextColor={dynamicStyles.placeholderTextColor}
             value={username}
             onChangeText={setUsername}
           />
           <TextInput
             style={dynamicStyles.input}
-            placeholder="Password"
+            placeholder="Şifre"
             placeholderTextColor={dynamicStyles.placeholderTextColor}
             secureTextEntry
             value={password}
@@ -140,7 +140,7 @@ export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Pr
             disabled={connectionStatus === "testing"}
           >
             <Text style={dynamicStyles.buttonText}>
-              {connectionStatus === "testing" ? "Connecting..." : "Connect"}
+              {connectionStatus === "testing" ? "Bağlanıyor..." : "Bağlan"}
             </Text>
           </Pressable>
           {statusMessage && (
@@ -151,14 +151,14 @@ export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Pr
             onPress={() => router.push("/providers")}
           >
             <Text style={{ color: theme.primary, fontSize: 14 }}>
-              Skip — Use Demo Mode
+              Demo Modunu Kullan
             </Text>
           </Pressable>
         </HermesCard>
 
-        <HermesCard title="Provider API Keys">
+        <HermesCard title="Provider API Anahtarları">
           <View style={{ marginBottom: 8 }}>
-            <Text style={dynamicStyles.label}>DeepSeek API Key</Text>
+            <Text style={dynamicStyles.label}>DeepSeek API Anahtarı</Text>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               <TextInput
                 style={[dynamicStyles.input, { flex: 1 }]}
@@ -181,7 +181,7 @@ export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Pr
           </View>
 
           <View style={{ marginBottom: 8 }}>
-            <Text style={dynamicStyles.label}>OpenRouter API Key</Text>
+            <Text style={dynamicStyles.label}>OpenRouter API Anahtarı</Text>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               <TextInput
                 style={[dynamicStyles.input, { flex: 1 }]}
@@ -204,7 +204,7 @@ export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Pr
           </View>
 
           <View style={{ marginBottom: 8 }}>
-            <Text style={dynamicStyles.label}>OpenCode API Key</Text>
+            <Text style={dynamicStyles.label}>OpenCode Go API Anahtarı</Text>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               <TextInput
                 style={[dynamicStyles.input, { flex: 1 }]}
@@ -229,7 +229,7 @@ export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Pr
           <View>
             <Text style={dynamicStyles.label}>OpenAI OAuth</Text>
             <Text style={[dynamicStyles.infoText, { marginTop: 4 }]}>
-              {openaiConnected ? "Connected" : "Not connected"} — Connect via jcode on VPS
+              {openaiConnected ? "Bağlı" : "Bağlı değil"} — VPS üzerinden bağlanır
             </Text>
           </View>
         </HermesCard>
@@ -248,7 +248,7 @@ export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Pr
 
         <HermesCard title="Provider Model Registry">
           <Text style={dynamicStyles.infoText}>
-            {safeMode ? "Safe mode: text-only models" : "Full provider selection"}
+            {safeMode ? "Güvenli mod: yalnızca metin modelleri" : "Tüm provider seçimi"}
           </Text>
           <View style={styles.pillRow}>
             <StatusPill label="DeepSeek" color={theme.primary} />
@@ -258,9 +258,9 @@ export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Pr
           </View>
         </HermesCard>
 
-        <HermesCard title="Safety">
+        <HermesCard title="Güvenlik">
           <View style={styles.row}>
-            <Text style={dynamicStyles.label}>Safe Mode</Text>
+            <Text style={dynamicStyles.label}>Güvenli Mod</Text>
             <Pressable
               style={[styles.toggle, safeMode && dynamicStyles.button]}
               onPress={() => onSafeModeChange(!safeMode)}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, Pressable, StyleSheet, Dimensions } from "react-native";
 import { Link, router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -126,14 +126,57 @@ const s = StyleSheet.create({
     fontWeight: "600",
     marginLeft: 8,
   },
+  statusSection: {
+    alignItems: "center",
+    minHeight: 42,
+  },
+  statusText: {
+    color: darkTheme.textSecondary,
+    fontSize: 12,
+    maxWidth: "100%",
+  },
+  demoStatus: {
+    color: darkTheme.accent,
+    fontSize: 12,
+    marginTop: 5,
+    fontWeight: "600",
+  },
 });
 
 export default function IndexScreen() {
+  const [connectionStatus, setConnectionStatus] = useState({
+    gatewayUrl: "",
+    provider: "",
+    model: "",
+    demoMode: false,
+  });
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const stored = await AsyncStorage.multiGet([
+          "@hermes/gatewayUrl",
+          "@hermes/selectedProvider",
+          "@hermes/selectedModel",
+          "@hermes/demoMode",
+        ]);
+        setConnectionStatus({
+          gatewayUrl: stored[0][1] ?? "",
+          provider: stored[1][1] ?? "",
+          model: stored[2][1] ?? "",
+          demoMode: stored[3][1] === "true",
+        });
+      } catch {
+        setConnectionStatus({ gatewayUrl: "", provider: "", model: "", demoMode: false });
+      }
+    })();
+  }, []);
+
   const handleDemoChat = async () => {
     try {
       await AsyncStorage.multiSet([
-        ["@hermes/selectedProvider", "openai-codex"],
-        ["@hermes/selectedModel", "gpt-4o"],
+        ["@hermes/selectedProvider", "opencode-go"],
+        ["@hermes/selectedModel", "kimi-k2.5"],
         ["@hermes/demoMode", "true"],
       ]);
     } catch {
@@ -156,8 +199,8 @@ export default function IndexScreen() {
             <Ionicons name="chatbubbles-outline" size={56} color={darkTheme.primary} />
           </View>
           <Text style={s.title}>Hermes Mobile</Text>
-          <Text style={s.subtitle}>Your AI Gateway</Text>
-          <Text style={s.version}>v{hermesBuildInfo.label}</Text>
+          <Text style={s.subtitle}>Yapay Zeka Gateway&apos;in</Text>
+          <Text style={s.version}>Faz {hermesBuildInfo.phase}</Text>
         </View>
 
         {/* Buttons */}
@@ -165,13 +208,21 @@ export default function IndexScreen() {
           <Link href="/settings" asChild>
             <Pressable style={s.primaryButton}>
               <Ionicons name="sparkles" size={18} color="#FFF" />
-              <Text style={s.primaryButtonText}>Get Started</Text>
+              <Text style={s.primaryButtonText}>Başla</Text>
             </Pressable>
           </Link>
           <Pressable style={s.outlineButton} onPress={handleDemoChat}>
             <Ionicons name="chatbox-ellipses-outline" size={18} color={darkTheme.text} />
-            <Text style={s.outlineButtonText}>Chat (Demo)</Text>
+            <Text style={s.outlineButtonText}>Sohbet (Demo)</Text>
           </Pressable>
+          <View style={s.statusSection}>
+            <Text style={s.statusText} numberOfLines={1}>
+              {connectionStatus.gatewayUrl
+                ? `Gateway: hazır - Provider: ${connectionStatus.provider || "-"} • Model: ${connectionStatus.model || "-"}`
+                : "Gateway: bağlı değil"}
+            </Text>
+            {connectionStatus.demoMode && <Text style={s.demoStatus}>Demo Modu</Text>}
+          </View>
         </View>
       </View>
     </ScreenShell>

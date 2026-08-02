@@ -1,5 +1,5 @@
 export const hermesBuildInfo = {
-  phase: "H51.5A",
-  label: "Mobile app MVP — settings connected, gateway testable",
-  gitCheckpointExpected: "stable-hermes-mobile-h51-5a-settings-connected-gateway-testable",
+  phase: "H52",
+  label: "Chat + providers + Turkish UI + APK release",
+  gitCheckpointExpected: "stable-hermes-mobile-h52-chat-providers-turkish-ui-apk-release",
 };

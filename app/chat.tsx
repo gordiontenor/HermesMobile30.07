@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { Link } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Clipboard from "expo-clipboard";
 import { Ionicons } from "@expo/vector-icons";
 import { ScreenShell } from "../src/components/ScreenShell";
 import { Header } from "../src/components/Header";
@@ -219,6 +220,15 @@ export default function ChatRoute() {
       });
       return next;
     });
+  }, []);
+
+  const handleCopyMessage = useCallback(async (text: string) => {
+    try {
+      await Clipboard.setStringAsync(text);
+      Alert.alert("Kopyalandı", "Mesaj panoya kopyalandı.");
+    } catch {
+      Alert.alert("Kopyalama başarısız", "Mesaj panoya kopyalanamadı.");
+    }
   }, []);
 
   const handleSend = useCallback(async () => {
@@ -440,12 +450,14 @@ export default function ChatRoute() {
               </View>
             ) : (
               messages.map((msg, index) => (
-                <View
+                <Pressable
                   key={index}
                   style={[
                     styles.bubble,
                     msg.role === "user" ? styles.bubbleUser : styles.bubbleAssistant,
                   ]}
+                  onLongPress={() => handleCopyMessage(msg.text)}
+                  delayLongPress={350}
                 >
                   <Text
                     style={[
@@ -469,7 +481,7 @@ export default function ChatRoute() {
                   >
                     {formatTime(msg.timestamp)}
                   </Text>
-                </View>
+                </Pressable>
               ))
             )}
 

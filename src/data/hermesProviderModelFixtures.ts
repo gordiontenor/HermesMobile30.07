@@ -84,23 +84,9 @@ export const MOCK_PROVIDER_REGISTRY: HermesProviderModelRegistry = {
       enabled: true,
       models: [
         {
-          modelId: "kimi-k3",
-          modelLabel: "Kimi K3",
-          modelDescription: "Moonshot AI en yeni model",
-          capabilities: {
-            requiresTools: false,
-            supportsStreaming: true,
-            supportsVision: true,
-            supportsToolCalls: true,
-          },
-          riskLevel: "low",
-          isDefault: false,
-          enabled: true,
-        },
-        {
           modelId: "kimi-k2.7-code",
           modelLabel: "Kimi K2.7 Code",
-          modelDescription: "Kod uzmani Kimi",
+          modelDescription: "Moonshot AI kod odakli model",
           capabilities: {
             requiresTools: false,
             supportsStreaming: true,
@@ -114,7 +100,7 @@ export const MOCK_PROVIDER_REGISTRY: HermesProviderModelRegistry = {
         {
           modelId: "kimi-k2.6",
           modelLabel: "Kimi K2.6",
-          modelDescription: "Gelismis Kimi",
+          modelDescription: "Moonshot AI yeni nesil",
           capabilities: {
             requiresTools: false,
             supportsStreaming: true,
@@ -128,7 +114,7 @@ export const MOCK_PROVIDER_REGISTRY: HermesProviderModelRegistry = {
         {
           modelId: "kimi-k2.5",
           modelLabel: "Kimi K2.5",
-          modelDescription: "Varsayilan Kimi modeli",
+          modelDescription: "Moonshot AI guclu genel model",
           capabilities: {
             requiresTools: false,
             supportsStreaming: true,
@@ -142,7 +128,7 @@ export const MOCK_PROVIDER_REGISTRY: HermesProviderModelRegistry = {
         {
           modelId: "minimax-m3",
           modelLabel: "MiniMax M3",
-          modelDescription: "MiniMax amiral gemisi",
+          modelDescription: "MiniMax en yeni model",
           capabilities: {
             requiresTools: false,
             supportsStreaming: true,
@@ -170,49 +156,7 @@ export const MOCK_PROVIDER_REGISTRY: HermesProviderModelRegistry = {
         {
           modelId: "minimax-m2.5",
           modelLabel: "MiniMax M2.5",
-          modelDescription: "MiniMax verimli model",
-          capabilities: {
-            requiresTools: false,
-            supportsStreaming: true,
-            supportsVision: true,
-            supportsToolCalls: true,
-          },
-          riskLevel: "low",
-          isDefault: false,
-          enabled: true,
-        },
-        {
-          modelId: "glm-5.2",
-          modelLabel: "GLM 5.2",
-          modelDescription: "Zhipu en yeni GLM",
-          capabilities: {
-            requiresTools: false,
-            supportsStreaming: true,
-            supportsVision: true,
-            supportsToolCalls: true,
-          },
-          riskLevel: "low",
-          isDefault: false,
-          enabled: true,
-        },
-        {
-          modelId: "glm-5.1",
-          modelLabel: "GLM 5.1",
-          modelDescription: "Zhipu GLM",
-          capabilities: {
-            requiresTools: false,
-            supportsStreaming: true,
-            supportsVision: true,
-            supportsToolCalls: true,
-          },
-          riskLevel: "low",
-          isDefault: false,
-          enabled: true,
-        },
-        {
-          modelId: "glm-5",
-          modelLabel: "GLM 5",
-          modelDescription: "Zhipu GLM",
+          modelDescription: "MiniMax dengeli model",
           capabilities: {
             requiresTools: false,
             supportsStreaming: true,
@@ -226,7 +170,7 @@ export const MOCK_PROVIDER_REGISTRY: HermesProviderModelRegistry = {
         {
           modelId: "deepseek-v4-pro",
           modelLabel: "DeepSeek V4 Pro",
-          modelDescription: "DeepSeek OpenCode Go uzerinden",
+          modelDescription: "DeepSeek guclu model",
           capabilities: {
             requiresTools: false,
             supportsStreaming: true,
@@ -240,11 +184,25 @@ export const MOCK_PROVIDER_REGISTRY: HermesProviderModelRegistry = {
         {
           modelId: "deepseek-v4-flash",
           modelLabel: "DeepSeek V4 Flash",
-          modelDescription: "DeepSeek hizli, OpenCode Go uzerinden",
+          modelDescription: "DeepSeek hizli ve verimli",
           capabilities: {
             requiresTools: false,
             supportsStreaming: true,
-            supportsVision: false,
+            supportsVision: true,
+            supportsToolCalls: true,
+          },
+          riskLevel: "low",
+          isDefault: false,
+          enabled: true,
+        },
+        {
+          modelId: "qwen3.8-max",
+          modelLabel: "Qwen 3.8 Max",
+          modelDescription: "Qwen en yeni en gelismis model",
+          capabilities: {
+            requiresTools: false,
+            supportsStreaming: true,
+            supportsVision: true,
             supportsToolCalls: true,
           },
           riskLevel: "low",
@@ -254,7 +212,7 @@ export const MOCK_PROVIDER_REGISTRY: HermesProviderModelRegistry = {
         {
           modelId: "qwen3.7-max",
           modelLabel: "Qwen 3.7 Max",
-          modelDescription: "Alibaba en guclu Qwen",
+          modelDescription: "Qwen guclu ust model",
           capabilities: {
             requiresTools: false,
             supportsStreaming: true,
@@ -268,7 +226,7 @@ export const MOCK_PROVIDER_REGISTRY: HermesProviderModelRegistry = {
         {
           modelId: "qwen3.7-plus",
           modelLabel: "Qwen 3.7 Plus",
-          modelDescription: "Alibaba Qwen",
+          modelDescription: "Qwen dengeli model",
           capabilities: {
             requiresTools: false,
             supportsStreaming: true,
@@ -282,7 +240,7 @@ export const MOCK_PROVIDER_REGISTRY: HermesProviderModelRegistry = {
         {
           modelId: "qwen3.6-plus",
           modelLabel: "Qwen 3.6 Plus",
-          modelDescription: "Alibaba Qwen",
+          modelDescription: "Qwen verimli model",
           capabilities: {
             requiresTools: false,
             supportsStreaming: true,
@@ -296,35 +254,7 @@ export const MOCK_PROVIDER_REGISTRY: HermesProviderModelRegistry = {
         {
           modelId: "qwen3.5-plus",
           modelLabel: "Qwen 3.5 Plus",
-          modelDescription: "Alibaba Qwen",
-          capabilities: {
-            requiresTools: false,
-            supportsStreaming: true,
-            supportsVision: true,
-            supportsToolCalls: true,
-          },
-          riskLevel: "low",
-          isDefault: false,
-          enabled: true,
-        },
-        {
-          modelId: "mimo-v2-pro",
-          modelLabel: "MiMo V2 Pro",
-          modelDescription: "Xiaomi en guclu model",
-          capabilities: {
-            requiresTools: false,
-            supportsStreaming: true,
-            supportsVision: true,
-            supportsToolCalls: true,
-          },
-          riskLevel: "low",
-          isDefault: false,
-          enabled: true,
-        },
-        {
-          modelId: "mimo-v2-omni",
-          modelLabel: "MiMo V2 Omni",
-          modelDescription: "Xiaomi multimodal",
+          modelDescription: "Qwen on model",
           capabilities: {
             requiresTools: false,
             supportsStreaming: true,
@@ -338,7 +268,7 @@ export const MOCK_PROVIDER_REGISTRY: HermesProviderModelRegistry = {
         {
           modelId: "mimo-v2.5-pro",
           modelLabel: "MiMo V2.5 Pro",
-          modelDescription: "Xiaomi yeni nesil",
+          modelDescription: "Xiaomi yeni nesil pro",
           capabilities: {
             requiresTools: false,
             supportsStreaming: true,
@@ -378,20 +308,6 @@ export const MOCK_PROVIDER_REGISTRY: HermesProviderModelRegistry = {
           enabled: true,
         },
         {
-          modelId: "hy3-preview",
-          modelLabel: "Hy3 Preview",
-          modelDescription: "Hy3 onizleme",
-          capabilities: {
-            requiresTools: false,
-            supportsStreaming: true,
-            supportsVision: true,
-            supportsToolCalls: true,
-          },
-          riskLevel: "low",
-          isDefault: false,
-          enabled: true,
-        },
-        {
           modelId: "gpt-5.6-luna",
           modelLabel: "GPT-5.6 Luna",
           modelDescription: "OpenAI Luna, OpenCode Go uzerinden",
@@ -405,21 +321,7 @@ export const MOCK_PROVIDER_REGISTRY: HermesProviderModelRegistry = {
           isDefault: false,
           enabled: true,
         },
-        {
-          modelId: "grok-4.5",
-          modelLabel: "Grok 4.5",
-          modelDescription: "xAI en yeni Grok",
-          capabilities: {
-            requiresTools: false,
-            supportsStreaming: true,
-            supportsVision: true,
-            supportsToolCalls: true,
-          },
-          riskLevel: "low",
-          isDefault: false,
-          enabled: true,
-        },
-      ],
+            ],
     },
     {
       providerId: "openrouter",

@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
-  Platform,
   Animated,
 } from "react-native";
 import { Link } from "expo-router";
@@ -20,6 +19,7 @@ import { ScreenShell } from "../src/components/ScreenShell";
 import { Header } from "../src/components/Header";
 import { HermesCard } from "../src/components/HermesCard";
 import { StatusPill } from "../src/components/StatusPill";
+import { RichText } from "../src/components/RichText";
 import { darkTheme } from "../src/theme/theme";
 import { useGatewayPersistence } from "../src/hooks/useGatewayPersistence";
 import { useSettingsPersistence } from "../src/hooks/useSettingsPersistence";
@@ -403,8 +403,8 @@ export default function ChatRoute() {
 
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+        behavior="padding"
+        keyboardVerticalOffset={0}
       >
         <View style={styles.container}>
           {/* Connection info card */}
@@ -477,18 +477,18 @@ export default function ChatRoute() {
                   onLongPress={() => handleCopyMessage(msg.text)}
                   delayLongPress={350}
                 >
-                  <Text
-                    style={[
-                      styles.bubbleText,
-                      msg.role === "user"
-                        ? styles.bubbleTextUser
-                        : msg.isError
-                          ? styles.bubbleTextError
-                          : styles.bubbleTextAssistant,
-                    ]}
-                  >
-                    {msg.text}
-                  </Text>
+                  {msg.role === "assistant" && !msg.isError ? (
+                    <RichText style={styles.bubbleTextAssistant}>{msg.text}</RichText>
+                  ) : (
+                    <Text
+                      style={[
+                        styles.bubbleText,
+                        msg.role === "user" ? styles.bubbleTextUser : styles.bubbleTextError,
+                      ]}
+                    >
+                      {msg.text}
+                    </Text>
+                  )}
                   <Text
                     style={[
                       styles.timestamp,
@@ -505,7 +505,7 @@ export default function ChatRoute() {
 
             {isStreaming && (
               <View style={[styles.bubble, styles.streamingBubble]}>
-                <Text style={styles.bubbleTextAssistant}>{streamingText}</Text>
+                <RichText style={styles.bubbleTextAssistant}>{streamingText}</RichText>
               </View>
             )}
 
@@ -524,10 +524,15 @@ export default function ChatRoute() {
               />
               <TextInput
                 style={styles.textInput}
-                placeholder="Type a message..."
+                placeholder="Mesaj yaz..."
                 placeholderTextColor={darkTheme.textSecondary}
                 value={inputText}
                 onChangeText={setInputText}
+                onFocus={() => {
+                  setTimeout(() => {
+                    scrollRef.current?.scrollToEnd({ animated: true });
+                  }, 150);
+                }}
                 multiline={false}
                 editable={!isSending}
               />

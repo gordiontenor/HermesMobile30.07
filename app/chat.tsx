@@ -22,6 +22,7 @@ import { HermesCard } from "../src/components/HermesCard";
 import { StatusPill } from "../src/components/StatusPill";
 import { darkTheme } from "../src/theme/theme";
 import { useGatewayPersistence } from "../src/hooks/useGatewayPersistence";
+import { useSettingsPersistence } from "../src/hooks/useSettingsPersistence";
 import { sendLiveNoToolsChatMessage } from "../src/api/hermesLiveChatTransport";
 import {
   getFriendlyChatErrorMessage,
@@ -113,8 +114,11 @@ export default function ChatRoute() {
   const [isDemo, setIsDemo] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isSending, setIsSending] = useState(false);
+  const [streamingText, setStreamingText] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
 
   const { username, password } = useGatewayPersistence();
+  const { streamingEnabled } = useSettingsPersistence();
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -240,6 +244,8 @@ export default function ChatRoute() {
     appendMessage(userMsg);
     setInputText("");
     setIsSending(true);
+    setStreamingText("");
+    setIsStreaming(false);
 
     try {
       if (isDemo) {
@@ -285,7 +291,17 @@ export default function ChatRoute() {
           return;
         }
 
-        const response = await sendLiveNoToolsChatMessage(config, { message: text, apiKey, model, provider });
+        const response = await sendLiveNoToolsChatMessage(
+          config,
+          { message: text, apiKey, model, provider },
+          null,
+          streamingEnabled
+            ? (delta) => {
+                setIsStreaming(true);
+                setStreamingText((previous) => previous + delta);
+              }
+            : undefined,
+        );
 
         if (response.status === "ok") {
           const assistantMsg: Message = {
@@ -317,8 +333,10 @@ export default function ChatRoute() {
       });
     } finally {
       setIsSending(false);
+      setIsStreaming(false);
+      setStreamingText("");
     }
-  }, [inputText, isSending, isDemo, gatewayUrl, username, password, appendMessage, model, provider]);
+  }, [inputText, isSending, isDemo, gatewayUrl, username, password, appendMessage, model, provider, streamingEnabled]);
 
   if (loadState === "loading") {
     return (
@@ -485,8 +503,14 @@ export default function ChatRoute() {
               ))
             )}
 
+            {isStreaming && (
+              <View style={[styles.bubble, styles.streamingBubble]}>
+                <Text style={styles.bubbleTextAssistant}>{streamingText}</Text>
+              </View>
+            )}
+
             {/* Typing indicator (three-dot animation while waiting for a reply) */}
-            {isSending && <TypingBubble />}
+            {isSending && !isStreaming && <TypingBubble />}
           </ScrollView>
 
           {/* Input bar */}
@@ -616,6 +640,11 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
     borderWidth: 1,
     borderColor: darkTheme.border,
+  },
+  streamingBubble: {
+    backgroundColor: "#2D2D2D",
+    alignSelf: "flex-start",
+    borderBottomLeftRadius: 4,
   },
   bubbleText: {
     fontSize: 15,

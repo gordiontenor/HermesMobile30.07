@@ -77,7 +77,7 @@ export function getFriendlyChatStatusMessage(
   }
   if (status === "upstream_unavailable") {
     return (
-      "Seçili provider yanıt vermedi. API key'inin doğru girildiğinden emin ol veya farklı bir model dene."
+      "Gateway yanıt alamadı. Geçici bir sorun olabilir — birkaç saniye sonra tekrar dene. Sorun sürerse API key'ini kontrol et."
     );
   }
   if (status === "timeout") {

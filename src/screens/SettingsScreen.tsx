@@ -12,6 +12,7 @@ import { fetchHermesProviderModelRegistryWithDiagnostics } from "../api/hermesPr
 import { Ionicons } from "@expo/vector-icons";
 import { useGatewayPersistence } from "../hooks/useGatewayPersistence";
 import { useProviderApiKeys } from "../hooks/useProviderApiKeys";
+import { useSettingsPersistence } from "../hooks/useSettingsPersistence";
 import { hermesBuildInfo } from "../config/hermesBuildInfo";
 
 interface Props {
@@ -23,6 +24,7 @@ interface Props {
 export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Props) {
   const { gatewayUrl, username, password, setGatewayUrl, setUsername, setPassword } = useGatewayPersistence();
   const { deepseekKey, opencodeKey, openrouterKey, openaiConnected, setDeepseekKey, setOpencodeKey, setOpenrouterKey } = useProviderApiKeys();
+  const { streamingEnabled, setStreamingEnabled } = useSettingsPersistence();
   const [connectionStatus, setConnectionStatus] = useState<HermesGatewayTestResultStatus>("idle");
   const [showDeepseek, setShowDeepseek] = useState(false);
   const [showOpencode, setShowOpencode] = useState(false);
@@ -267,6 +269,21 @@ export default function SettingsScreen({ theme, safeMode, onSafeModeChange }: Pr
               onPress={() => onSafeModeChange(!safeMode)}
             >
               <View style={[styles.toggleThumb, safeMode && styles.toggleThumbActive]} />
+            </Pressable>
+          </View>
+        </HermesCard>
+
+        <HermesCard title="Akıllı Yanıt Akışı (Streaming)">
+          <Text style={dynamicStyles.infoText}>
+            Cevap geldikçe parça parça görünür (deneysel).
+          </Text>
+          <View style={styles.row}>
+            <Text style={dynamicStyles.label}>{streamingEnabled ? "Açık" : "Kapalı"}</Text>
+            <Pressable
+              style={[styles.toggle, streamingEnabled && dynamicStyles.button]}
+              onPress={() => setStreamingEnabled(!streamingEnabled)}
+            >
+              <View style={[styles.toggleThumb, streamingEnabled && styles.toggleThumbActive]} />
             </Pressable>
           </View>
         </HermesCard>
